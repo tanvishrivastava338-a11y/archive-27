@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "motion/react"
 import archiveCinema from "./assets/archive-cinema.jpg"
 import archiveLetter from "./assets/archive-letter.jpg"
@@ -9,10 +9,26 @@ import archivePhotograph from "./assets/archive-photograph.jpg"
 import archivePlatform from "./assets/archive-platform.jpg"
 
 function App() {
-  const [selectedObject, setSelectedObject] = useState(null)
-const [cart, setCart] = useState([])
+const [selectedObject, setSelectedObject] = useState(null)
+const [cart, setCart] = useState(() => {
+  try {
+    const savedCart = localStorage.getItem("archive27-cart")
+
+    return savedCart ? JSON.parse(savedCart) : []
+  } catch {
+    return []
+  }
+})
 const [showCart, setShowCart] = useState(false)
 const [showCheckout, setShowCheckout] = useState(false)
+const [orderComplete, setOrderComplete] = useState(false)
+
+useEffect(() => {
+  localStorage.setItem(
+    "archive27-cart",
+    JSON.stringify(cart)
+  )
+}, [cart])
 
   const archiveObjects = {
   cinema: {
@@ -948,20 +964,17 @@ const buyNow = (object) => {
         </div>
 
         <button
-          className="place-order-button"
-          onClick={() => {
-            alert(
-              "Order placed successfully. Thank you for acquiring a piece of Archive 27."
-            )
-
-            setCart([])
-            setShowCheckout(false)
-            setSelectedObject(null)
-          }}
-        >
-          PLACE ORDER
-          <span>↗</span>
-        </button>
+  className="place-order-button"
+  onClick={() => {
+    setCart([])
+    setShowCheckout(false)
+    setSelectedObject(null)
+    setOrderComplete(true)
+  }}
+>
+  PLACE ORDER
+  <span>↗</span>
+</button>
 
         <p className="checkout-disclaimer">
           This is a demonstration checkout for the
@@ -969,6 +982,67 @@ const buyNow = (object) => {
           be processed.
         </p>
       </div>
+    </div>
+  </motion.section>
+)}
+
+{orderComplete && (
+  <motion.section
+    className="order-success"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+  >
+    <div className="success-top">
+      <span>ARCHIVE 27</span>
+      <span>ACQUISITION CONFIRMED</span>
+    </div>
+
+    <div className="success-main">
+      <span className="success-number">
+        RECORD / 001
+      </span>
+
+      <h1>
+        The object
+        <br />
+        has been <em>acquired.</em>
+      </h1>
+
+      <p>
+        Your acquisition has been recorded in the
+        Archive 27 collection.
+      </p>
+
+      <div className="success-reference">
+        <span>ARCHIVE REFERENCE</span>
+        <strong>
+          A27 — {Date.now().toString().slice(-6)}
+        </strong>
+      </div>
+
+      <button
+        className="success-button"
+        onClick={() => {
+          setOrderComplete(false)
+
+          setTimeout(() => {
+            document
+              .getElementById("index")
+              ?.scrollIntoView({
+                behavior: "smooth",
+              })
+          }, 100)
+        }}
+      >
+        RETURN TO THE ARCHIVE
+        <span>↗</span>
+      </button>
+    </div>
+
+    <div className="success-bottom">
+      <span>THE HUMAN ARCHIVE</span>
+      <span>EVERYTHING DISAPPEARS. WE KEEP THE TRACE.</span>
     </div>
   </motion.section>
 )}
